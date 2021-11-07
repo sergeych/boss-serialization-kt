@@ -20,7 +20,7 @@ Note that it is based on experimental API of the kotlinx serialization that coul
 
 ## Usage notes
 
-As for now, you should build the jar and install it into your project. There is a gradle task to build and copy jars into shared space `$projectRoot\..\jarlib\boss-serialization.jar`. From there it could  be included into other projects somewhat like:
+As for now, you should copy from releases (or build from sources) the jar and install it into your project. There is a gradle task to build and copy jars into shared space `$projectRoot\..\jarlib\boss-serialization.jar`. From there it could  be included into other projects somewhat like:
 
 ~~~
 implementation(files("../jarlib/kotyara.jar"))
@@ -57,6 +57,12 @@ If you need to decode boss to a map rather than a class instance, use `BossStruc
 - nullability is supported for all fields
 
 ## Important limitations
+
+### Root object should be a class instance, not a collection 
+
+...and not a simple type. You can not serialize or deserialize a list, or a simple type, or whatever else as a root object. You _can serialize it as a field of a root object. The object you serialize should always be a class instance, and the object you deserialize to should be an instance of a class, not a list or a map. The fields could be lists, maps or whatever else, but the root object should be a class instance. It means that in the encoded boss object the root object must be a map.
+
+Please add an issue if you really need to use anything at root level.
 
 ### Use `BossStruct` as a Map in fields
 
