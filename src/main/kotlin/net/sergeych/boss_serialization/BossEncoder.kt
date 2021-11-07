@@ -58,8 +58,22 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
     }
 
     companion object {
+        /**
+         * Encode some `@Serializable` value to a packed binary boss data
+         */
         inline fun <reified T>encode(value: T): ByteArray =
             Boss.Writer().encode(value).toByteArray()
+
+        /**
+         * Encode some `@Serializable` value into a [BossStruct], a map wrap (thus properly seializable
+         * itself with this encoder), in the form that could be serialized with low-level boss packer or
+         * deserialized from it using matching [BossDecoder.decodeFrom] method.
+         */
+        inline fun <reified T>encodeToStruct(value: T): BossStruct = BossStruct().also {
+            BossEncoder(it).encodeSerializableValue(
+                EmptySerializersModule.serializer<T>(),
+                value)
+        }
     }
 }
 

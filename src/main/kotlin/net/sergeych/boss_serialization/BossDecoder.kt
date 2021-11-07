@@ -100,6 +100,27 @@ class BossDecoder(
         }
 
         /**
+         * Decode (deserialize) from a map, usually, returned by some boss decoder; for example, if you
+         * hane an array with different items in it, you can get ot with [loadBossList] and then decode
+         * each element with proper type:
+         * ~~~
+         * val list: List<BossStruct> = loadBossList(someData)
+         * val element5: Element5 = BossDecoder.decodeFrom(list[5])
+         * val element3: Element3 = BossDecoder.decodeFrom(list[3])
+         * ~~~
+         * as it is not possible in Kotlin to specify different types for array indexes, it is the only
+         * way to easily handle polymorphic content arrays.
+         *
+         * @param map a map, or a [BossStruct] instance.
+         * @return deserialized instance
+         */
+        inline fun <reified T> decodeFrom(map: Map<String,Any?>): T {
+            val d = EmptySerializersModule.serializer<T>()
+            val decoder = BossDecoder(BossStruct.from(map), d.descriptor)
+            return d.deserialize(decoder)
+        }
+
+        /**
          * Decode (deserialize) from a byte array. The return type could be specified as nullable.
          */
         inline fun <reified T> decodeFrom(binaryData: ByteArray): T {

@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.0-beta1"
+version = "1.0.1-beta1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -54,7 +54,7 @@ tasks.register<Copy>("localRelease") {
     dependsOn("jar")
     from("$rootDir/build/libs/boss-serialization-$version.jar")
     into("$rootDir/../jarlib")
-    rename { "boss-serialization1.jar" }
+    rename { "boss-serialization.jar" }
 }
 
 tasks.dokkaHtml.configure {
