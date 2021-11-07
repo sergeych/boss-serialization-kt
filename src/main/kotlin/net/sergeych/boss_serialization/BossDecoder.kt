@@ -1,4 +1,5 @@
 @file:UseSerializers(ZonedDateTimeSerializer::class)
+@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
 
 package net.sergeych.boss_serialization
 
@@ -11,8 +12,14 @@ import kotlinx.serialization.internal.NamedValueDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import net.sergeych.boss.Boss
 import net.sergeych.utils.Bytes
-import java.time.ZonedDateTime
 
+/**
+ * Deserialization of the boss-encoded object. Note that root object passed to the instance
+ * should be a map.
+ *
+ * Normally, you use variants of [decodeFrom] rather than instantiating this class directly or
+ * extension functions [ByteArray.decodeBoss] and [Boss.Reader.deserialize].
+ */
 @ExperimentalSerializationApi
 @OptIn(InternalSerializationApi::class)
 class BossDecoder(
@@ -24,6 +31,7 @@ class BossDecoder(
     private val isCollection = descriptor.kind == StructureKind.LIST || descriptor.kind == StructureKind.MAP
     private val size = if (isCollection) Int.MAX_VALUE else descriptor.elementsCount
 
+    @Suppress("UNCHECKED_CAST")
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         return when (descriptor.kind) {
             is StructureKind.LIST -> BossListDecoder(currentObject[currentTag] as List<Any?>)
@@ -52,13 +60,17 @@ class BossDecoder(
             ZonedDateTimeSerializer.descriptor -> decodeTaggedValue(currentTag) as T
             byteArraySerializerDescriptor -> (decodeTaggedValue(currentTag) as Bytes).toArray() as T
             bossStructSerializerDescriptor -> {
-                BossStruct(decodeTaggedValue(currentTag) as Map<String, @Contextual Any?>) as T
+                BossStruct(decodeTaggedValue(currentTag) as MutableMap<String, @Contextual Any?>) as T
             }
             else -> super.decodeSerializableValue(deserializer)
         }
 
     override fun decodeTaggedNotNullMark(tag: String): Boolean =
         tag in currentObject && currentObject[tag] != null
+
+    override fun decodeTaggedEnum(tag: String, enumDescriptor: SerialDescriptor): Int {
+        return decodeTaggedInt(tag)
+    }
 
     override fun decodeTaggedValue(tag: String): Any {
         checkTagIsStored(tag)
@@ -76,13 +88,30 @@ class BossDecoder(
     companion object {
         internal val byteArraySerializerDescriptor = serializer<ByteArray>().descriptor
         internal val bossStructSerializerDescriptor = serializer<BossStruct>().descriptor
+
+        /**
+         * Decode (deserialize) from a reader. The return type could be specified as nullable.
+         */
+        inline fun <reified T> decodeFrom(br: Boss.Reader): T {
+            val d = EmptySerializersModule.serializer<T>()
+            val decoder = BossDecoder(br.readMap().toMap(),
+                d.descriptor)
+            return d.deserialize(decoder)
+        }
+
+        /**
+         * Decode (deserialize) from a byte array. The return type could be specified as nullable.
+         */
+        inline fun <reified T> decodeFrom(binaryData: ByteArray): T {
+            return decodeFrom(Boss.Reader(binaryData))
+        }
     }
 }
 
 
 @OptIn(ExperimentalSerializationApi::class)
 internal class BossListDecoder(
-    private val source: List<Any?>,
+    source: List<Any?>,
 ) : AbstractDecoder() {
 
     override val serializersModule = EmptySerializersModule
@@ -122,7 +151,7 @@ internal class BossListDecoder(
         else -> super.decodeSerializableValue(deserializer)
     }
 
-
+    @Suppress("UNCHECKED_CAST")
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         if (!values.hasNext())
             throw SerializationException("expected serialized class data missing")

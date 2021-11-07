@@ -1,6 +1,7 @@
 @file:UseSerializers(ZonedDateTimeSerializer::class)
 package net.sergeych.boss_serialization
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.sergeych.boss.Boss
@@ -8,6 +9,8 @@ import net.sergeych.utils.Bytes
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.test.*
+
+enum class FoobarEnum{ FOO, BAR, BUZZ }
 
 @Suppress("ArrayInDataClass")
 @Serializable
@@ -57,6 +60,7 @@ data class SimpleDataWithStruct(
 @Serializable
 data class InnerData(val str: String)
 
+@ExperimentalSerializationApi
 internal class BossSerializerTest {
 
     val someDate = ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.SECONDS)
@@ -122,10 +126,59 @@ internal class BossSerializerTest {
         println(s)
     }
 
-//    @Test fun testDecodeArray() {
-//        val data = Boss.dumpToArray(arrayOf(5,4,3))
-//        println(data.dump())
-//        val r = data.fromBoss<List<Int>>()
-//    }
+    @Test fun encodeSimpleClass() {
+        @Serializable
+        data class FooBar(val foo: String,val bar: Int,val time: ZonedDateTime)
+        val d1 = FooBar("bar", 42, ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+        val data = BossEncoder.encode(d1)
+        println(data.dump())
+        val d2 = data.decodeBoss<FooBar>()
+        assertEquals(d1, d2)
+    }
+
+    @Test fun encodeNullableSimpleClass() {
+        @Serializable
+        data class FooBar(val foo: String,val bar: Int,val time: ZonedDateTime?)
+        val d1 = FooBar("bar", 42, null)
+        val data = BossEncoder.encode(d1)
+        println(data.dump())
+        val d2 = data.decodeBoss<FooBar>()
+        assertEquals(d1, d2)
+    }
+
+    @Test fun encodeLists() {
+        @Serializable
+        data class FooBar(val foos: List<String>)
+        @Serializable
+        data class Buzz(val foobars: List<FooBar>)
+
+        val fb1 = FooBar(listOf("foo","bar"))
+        val data = BossEncoder.encode(fb1)
+        println(data.decodeBossStruct())
+        assertIs<List<String>>(data.decodeBossStruct()["foos"])
+        val fb2: FooBar = data.decodeBoss()
+        assertEquals(fb1, fb2)
+        val fb3 = FooBar(listOf("bar","buzz"))
+        val b1 = Buzz(listOf(fb3, fb1))
+        val data2 = BossEncoder.encode(b1)
+        println(data2.dump())
+        println(data2.decodeBossStruct())
+        val b2 = data2.decodeBoss<Buzz>()
+        assertEquals(b1, b2)
+    }
+
+    @Test fun decodeEnums() {
+        @Serializable
+        data class Foobar(val foo: FoobarEnum)
+        val fb1 = Foobar(FoobarEnum.BAR)
+        val data = BossEncoder.encode(fb1)
+        println(data.dump())
+        println(data.decodeBossStruct())
+        assertEquals(1, data.decodeBossStruct().getAs<Int>("foo"))
+
+        val fb2 = data.decodeBoss<Foobar>()
+        assertEquals(fb1, fb2)
+    }
+
 
 }

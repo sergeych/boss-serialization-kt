@@ -1,6 +1,9 @@
+@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+
 package net.sergeych.boss_serialization
 
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -8,17 +11,24 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.modules.EmptySerializersModule
-import kotlinx.serialization.serializer
 import net.sergeych.boss.Boss
 import net.sergeych.utils.Bytes
-import java.io.Serial
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-val bossSerializersModule = EmptySerializersModule
-
+/**
+ * Serialization for ZonedDateTime. In Boss serialization, it falls back to Boss-native datetime type, otherwise
+ * serializes to long with unix epoch second. The time is always truncated to second (as stated, unix
+ * epoch second).
+ *
+ * Please use this serializer explicitly, for example by adding
+ * ```
+ * @file:UseSerializers(ZonedDateTimeSerializer::class)
+ * ```
+ * to the top of any file that serializes `ZonedDateTime`. Using any other serializer for this type
+ * may break binary compatibility with other Boss consumers.
+ */
 object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ZDT", PrimitiveKind.LONG)
     override fun serialize(encoder: Encoder, value: ZonedDateTime) =
@@ -30,29 +40,55 @@ object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
     }
 }
 
-//val ZonedDateTime.descriptor get() = ZonedDateTimeSerializer.descriptor
+/**
+ * Decode boss object from this binary data
+ */
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> ByteArray.decodeBoss(): T = BossDecoder.decodeFrom(this)
 
-inline fun <reified T> ByteArray.decodeBoss(): T {
-    return Boss.Reader(this).deserialize()
-}
+/**
+ * Convenience method: decode boss binary data to struct.
+ */
+fun ByteArray.decodeBossStruct(): BossStruct = BossStruct(Boss.load(this) as MutableMap<String, Any?>)
 
-inline fun ByteArray.decodeBossStruct(): BossStruct = BossStruct(Boss.load(this) as Map<String, Any?>)
+/**
+ * read and deserialize object from boss reader
+ */
+@Suppress("unused")
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> Boss.Reader.deserialize(): T = BossDecoder.decodeFrom(this)
 
-inline fun <reified T> Boss.Reader.deserialize(): T {
-    val d = bossSerializersModule.serializer<T>()
-    val decoder = BossDecoder(this.readMap().toMap(),
-        d.descriptor)
-    return d.deserialize(decoder)
-}
-
+/**
+ * ASCII dump representation for a binary data, with address, hex and ascii fields, following the
+ * old tradition
+ */
 fun ByteArray.dump(): String =
     Bytes(this).toDump()
 
+/**
+ * Wrap for Map<String,Any?> to allow de/serialization of the Maps with arbitrary content. Due to some
+ * architectural limitations of `kotlinx.serialization` module, this is the only way to include such
+ * map fields in the objects to be de/serialized, otherwise it won't be processed properly. It also has
+ * few convenience methods to access typed data.
+ */
 @Serializable
 @Suppress("UNCHECKED_CAST")
-class BossStruct(val __source: Map<String,@Contextual Any?> = HashMap()): Map<String,Any?> by __source {
-    fun getStruct(key: String): BossStruct? = get(key)?.let { BossStruct(it as Map<String,Any?>) }
-    fun <T>getAs(key: String): T = get(key) as T
+class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = HashMap()) :
+    MutableMap<String, Any?> by __source {
+    /**
+     * Get the element as a BossStruct, creating if necessary, as wrap around any other Map that
+     * presents. E.g. if you need a BossStruct, whatever data is held here (e.g. Boss.Dictionary, is most often
+     * used while decoding boss binaries), use this method.
+     */
+    @Suppress("unused")
+    fun getStruct(key: String): BossStruct? = get(key)?.let {
+        if( it is BossStruct ) it else BossStruct(it as MutableMap<String, Any?>)
+    }
+
+    /**
+     * Get and cast to a given type. Utility method.
+     */
+    fun <T> getAs(key: String): T = get(key) as T
     override fun toString(): String {
         return __source.toString()
     }
