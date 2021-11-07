@@ -101,12 +101,12 @@ class BossDecoder(
 
         /**
          * Decode (deserialize) from a map, usually, returned by some boss decoder; for example, if you
-         * hane an array with different items in it, you can get ot with [loadBossList] and then decode
+         * have an array with different items in it, you can get ot with [loadBossList] and then decode
          * each element with proper type:
          * ~~~
-         * val list: List<BossStruct> = loadBossList(someData)
-         * val element5: Element5 = BossDecoder.decodeFrom(list[5])
-         * val element3: Element3 = BossDecoder.decodeFrom(list[3])
+         * val list = loadBossList(someData)
+         * val element5: Element5 = BossDecoder.decodeFrom(list.structAt(5))
+         * val element3: Element3 = BossDecoder.decodeFrom(list.structAt(3))
          * ~~~
          * as it is not possible in Kotlin to specify different types for array indexes, it is the only
          * way to easily handle polymorphic content arrays.

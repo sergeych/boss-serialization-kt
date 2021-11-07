@@ -41,8 +41,8 @@ object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
 /**
  * Unpack to list a BOSS-packed binary
  */
-fun <T>loadBossList(packed: ByteArray): List<T> {
-    return Boss.load(packed) as List<T>
+fun loadBossList(packed: ByteArray): List<Any?> {
+    return Boss.load(packed) as List<Any?>
 }
 
 /**
