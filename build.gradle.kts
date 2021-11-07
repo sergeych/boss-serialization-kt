@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.3.0")
-    implementation("com.icodici:universa_core:3.14.3+")
+    implementation("com.icodici:common_tools:3.14.3+")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
@@ -54,7 +54,7 @@ tasks.register<Copy>("localRelease") {
     dependsOn("jar")
     from("$rootDir/build/libs/boss-serialization-$version.jar")
     into("$rootDir/../jarlib")
-    rename { "boss-serialization.jar" }
+    rename { "boss-serialization1.jar" }
 }
 
 tasks.dokkaHtml.configure {

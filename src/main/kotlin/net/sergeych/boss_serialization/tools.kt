@@ -41,7 +41,7 @@ object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
 }
 
 /**
- * Decode boss object from this binary data
+ * Decode boss object from this binary data into a given class instance
  */
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> ByteArray.decodeBoss(): T = BossDecoder.decodeFrom(this)

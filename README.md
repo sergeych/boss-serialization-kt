@@ -81,6 +81,31 @@ You can, for example, add the following line
 
 to the beginning any file that uses `ZonedDateTime` serializable fields.
 
+## Boss protocol links
+
+### Java Boss library
+
+~~~
+repositories { 
+    maven( "https://maven.universablockchain.com") 
+}
+dependencies {
+    implementation("com.icodici:common_tools:3.14.3+")
+}
+~~~
+
+### Javascript support
+
+There is a NPM module [Unicrypto](https://www.npmjs.com/package/unicrypto) that works well in both browser and nodejs environment. It is widely used and production stable.
+
+### Ruby support
+
+There is stable and production-ready ruby gem for it: [sergeych/boss_protocol](https://github.com/sergeych/boss_protocol). This gem is in use in many production environments.
+
+### C++
+
+There is a BOSS codec in the [Universa U8 engine](https://github.com/UniversaBlockchain/U8) but it may not be easy to extract it from there.
+
 ## License
 
 MIT as for now, should be included in the repository. Since it is early alfa, the license might also be changed, but to some free one.
