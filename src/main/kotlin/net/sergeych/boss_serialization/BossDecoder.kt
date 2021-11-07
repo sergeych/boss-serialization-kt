@@ -39,7 +39,13 @@ class BossDecoder(
                 checkTagIsStored(it)
                 BossDecoder(currentObject[it] as Map<String, Any?>, descriptor)
             } ?: this
-            else -> throw SerializationException("unsupported king: ${descriptor.kind}")
+            is StructureKind.OBJECT -> {
+                if(descriptor.serialName == "kotlin.Unit")
+                    this
+                else
+                    throw SerializationException("unsupported kind: ${descriptor.kind}")
+            }
+            else -> throw SerializationException("unsupported kind: ${descriptor.kind}")
         }
     }
 

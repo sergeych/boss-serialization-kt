@@ -180,5 +180,9 @@ internal class BossSerializerTest {
         assertEquals(fb1, fb2)
     }
 
+    @Test fun deserializeUnit() {
+        val x = BossDecoder.decodeFrom<Unit>(BossStruct.EMPTY)
+        assertIs<Unit>(x)
+    }
 
 }
