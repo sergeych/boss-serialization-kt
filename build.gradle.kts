@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.0.1-beta1"
+version = "1.0.2-beta1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8

@@ -38,17 +38,25 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
         when (serializer.descriptor) {
             BossDecoder.bossStructSerializerDescriptor,
             ZonedDateTimeSerializer.descriptor,
-            BossDecoder.byteArraySerializerDescriptor -> currentObject[currentTag] = value
-            else -> super.encodeSerializableValue(serializer, value)
+            BossDecoder.byteArraySerializerDescriptor -> {
+                currentObject[currentTag] = value
+                popTag()
+            }
+            else ->
+                super.encodeSerializableValue(serializer, value)
         }
     }
-
 
     override fun beginCollection(
         descriptor: SerialDescriptor,
         collectionSize: Int,
     ): CompositeEncoder {
-        return currentTagOrNull?.let { tag -> BossListEncoder(ArrayList<Any?>().also { currentObject[tag] = it }) }
+        return currentTagOrNull?.let { tag ->
+            BossListEncoder(ArrayList<Any?>().also {
+                currentObject[tag] = it
+                popTag()
+            })
+        }
             ?: throw SerializationException("can't encode lists as root object (root must be a class)")
     }
 
@@ -61,7 +69,7 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
         /**
          * Encode some `@Serializable` value to a packed binary boss data
          */
-        inline fun <reified T>encode(value: T): ByteArray =
+        inline fun <reified T> encode(value: T): ByteArray =
             Boss.Writer().encode(value).toByteArray()
 
         /**
@@ -69,11 +77,16 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
          * itself with this encoder), in the form that could be serialized with low-level boss packer or
          * deserialized from it using matching [BossDecoder.decodeFrom] method.
          */
-        inline fun <reified T>encodeToStruct(value: T): BossStruct = BossStruct().also {
-            BossEncoder(it).encodeSerializableValue(
-                EmptySerializersModule.serializer<T>(),
-                value)
-        }
+        inline fun <reified T> encodeToStruct(value: T): BossStruct =
+            if (value is Map<*, *>)
+                BossStruct.from(value)
+            else
+                BossStruct().also {
+                    BossEncoder(it).encodeSerializableValue(
+                        EmptySerializersModule.serializer<T>(),
+                        value
+                    )
+                }
     }
 }
 
@@ -82,10 +95,14 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
  */
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> Boss.Writer.encode(value: T): Boss.Writer {
-    val serializer: KSerializer<T> = EmptySerializersModule.serializer<T>()
-    val bs = BossStruct()
-    BossEncoder(bs).encodeSerializableValue(serializer,value)
-    writeObject(bs)
+    if (value is BossStruct)
+        writeObject(value)
+    else {
+        val serializer: KSerializer<T> = EmptySerializersModule.serializer<T>()
+        val bs = BossStruct()
+        BossEncoder(bs).encodeSerializableValue(serializer, value)
+        writeObject(bs)
+    }
     return this
 }
 
@@ -108,10 +125,10 @@ internal class BossListEncoder(private val collection: MutableList<Any?>) : Abst
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
-        return BossEncoder(BossStruct().also{ collection.add(it) } )
+        return BossEncoder(BossStruct().also { collection.add(it) })
     }
 
     override fun beginCollection(descriptor: SerialDescriptor, collectionSize: Int): CompositeEncoder {
-        return BossListEncoder(ArrayList<Any?>().also { collection.add(it)})
+        return BossListEncoder(ArrayList<Any?>().also { collection.add(it) })
     }
 }

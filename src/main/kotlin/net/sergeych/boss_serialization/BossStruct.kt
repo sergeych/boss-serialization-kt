@@ -2,6 +2,7 @@ package net.sergeych.boss_serialization
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import net.sergeych.utils.Bytes
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -29,9 +30,12 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
      * Get and cast to a given type. Utility method.
      */
     fun <T> getAs(key: String): T = get(key) as T
-    override fun toString(): String {
-        return __source.toString()
-    }
+
+    override fun toString(): String =
+        "{" + this.__source.entries.joinToString(", ") { (k,v) ->
+            "$k=${formatItem(v)}"
+        } + "}"
+//    override fun toString(): String = __source.toString()
 
     @Suppress("unused")
     companion object {
@@ -59,5 +63,34 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
                 is Map<*, *> -> BossStruct((source as Map<String, Any?>).toMutableMap())
                 else -> throw ClassCastException("can't convert to BossStruct: $source")
             }
+
+        fun from(vararg data: Pair<String, Any?>): BossStruct = BossStruct().also {
+            for ((key, value) in data)
+                it[key] = value
+        }
+
+        private fun formatItem(item: Any?): String =
+            when(item) {
+                null -> "null"
+                is BossStruct -> item.toString()
+                is Map<*,*> -> "{${from(item)}"
+                is List<*> -> {
+                    "[${item.joinToString(",") { formatItem(it) }}]"
+                }
+                is Array<*> -> {
+                    "[${item.joinToString(",") { formatItem(it) }}>"
+                }
+                is Bytes -> formatBinary(item.toArray())
+                is ByteArray -> formatBinary(item)
+                else -> item.toString()
+            }
+
+        private fun formatBinary(item: ByteArray): String {
+            val start = item.take(7).joinToString(" ") { "%02X".format(it) }
+            return if (item.size <= 7)
+                "|$start|"
+            else
+                "|$start…(${item.size})|"
+        }
     }
 }

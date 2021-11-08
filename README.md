@@ -58,6 +58,10 @@ If you need to decode boss to a map rather than a class instance, use `BossStruc
 
 ## Important limitations
 
+### No polymorphic Any-arrays in de/serializer
+
+The `lotlinx.serialization` library is compile-time, no reflection, so it can't really distinguish types in polymorphic arrays if the base type for the component is Any. So, use traditional Boss class interface to cope with such. Still, if the type of the array is not Any, you can include it providing you registered de/serializer for your base class that implements such polymorphism, it is an allowed and almost well described technique, see main library docs.
+
 ### Root object should be a class instance, not a collection 
 
 ...and not a simple type. You can not serialize or deserialize a list, or a simple type, or whatever else as a root object. You _can serialize it as a field of a root object. The object you serialize should always be a class instance, and the object you deserialize to should be an instance of a class, not a list or a map. The fields could be lists, maps or whatever else, but the root object should be a class instance. It means that in the encoded boss object the root object must be a map.
