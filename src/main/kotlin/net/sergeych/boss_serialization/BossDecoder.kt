@@ -123,6 +123,8 @@ class BossDecoder(
          * @return deserialized instance
          */
         inline fun <reified T> decodeFrom(map: Map<String,Any?>): T {
+            if( T::class == BossStruct::class )
+                return BossStruct(map.toMutableMap<String,Any?>()) as T
             val d = EmptySerializersModule.serializer<T>()
             val decoder = BossDecoder(BossStruct.from(map), d.descriptor)
             return d.deserialize(decoder)

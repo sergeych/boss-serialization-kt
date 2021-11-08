@@ -31,6 +31,8 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
      */
     fun <T> getAs(key: String): T = get(key) as T
 
+    fun getByteArray(key: String): ByteArray? = get(key)?.let { makeByteArray(it) }
+
     override fun toString(): String =
         "{" + this.__source.entries.joinToString(", ") { (k,v) ->
             "$k=${formatItem(v)}"
@@ -94,3 +96,5 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
         }
     }
 }
+
+fun bossStructOf(vararg pairs: Pair<String,Any?>) = BossStruct.from(*pairs)

@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "UNCHECKED_CAST")
 
 package net.sergeych.boss_serialization
 
@@ -27,16 +27,19 @@ fun <T> List<T>.longAt(index: Int) = (get(index) as Number?)?.toLong()
  * Otherwise, throw exception.
  * @throws ClassCastException if the element at index can't be converted to a ByteArray
  */
-@Suppress("UNCHECKED_CAST")
 fun <T> List<T>.bytesAt(index: Int): ByteArray? =
-    get(index)?.let {
-        when (it) {
-            is ByteArray -> it
-            is Bytes -> it.toArray()
-            is List<*> -> (it as List<Byte>).toByteArray()
-            else -> throw ClassCastException("cannot convert to byte array: $it")
-        }
-    }
+    get(index)?.let { makeByteArray(it) }
+
+/**
+ * Boss-specific conversion (if need) to anything that is in fact arry of bytes
+ * to a Kotlin ByteArray.
+ */
+fun <T> makeByteArray(it: T): ByteArray = when (it) {
+    is ByteArray -> it
+    is Bytes -> it.toArray()
+    is List<*> -> (it as List<Byte>).toByteArray()
+    else -> throw ClassCastException("cannot convert to byte array: $it")
+}
 
 /**
  * Get element at index and return it if it is a `BossStruct` instance, otherwise convert it to
@@ -49,7 +52,6 @@ fun <T> List<T>.bytesAt(index: Int): ByteArray? =
  * @return BossStruct instance as described above
  * @throws ClassCastException if can't perform necessary conversion
  */
-@Suppress("UNCHECKED_CAST")
 fun <T> List<T>.structAt(index: Int): BossStruct? =
     get(index)?.let { BossStruct.from(it) }
 
