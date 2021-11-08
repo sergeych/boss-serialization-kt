@@ -7,7 +7,14 @@ import net.sergeych.utils.Bytes
 /**
  * Get element at index as Int or null if it is null.
  */
-fun <T> List<T>.intAt(index: Int) = get(index) as Int?
+fun <T> List<T>.intAt(index: Int) = (get(index) as Number?)?.toInt()
+
+/**
+ * Get element at index as Int or null if it is null.
+ */
+fun <T> List<T>.longAt(index: Int) = (get(index) as Number?)?.toLong()
+
+
 
 /**
  * Get element at index and try to convert it to byte array using following strategy:

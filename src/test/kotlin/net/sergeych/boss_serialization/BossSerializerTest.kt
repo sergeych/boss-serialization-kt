@@ -244,13 +244,16 @@ internal class BossSerializerTest {
         assertEquals(pi2, pi3)
     }
 
-//    @Test
-//    fun serializePolyLists() {
-//        @Serializable
-//        data class Foobar(val foo: List<@Contextual Any>,val bar: Int)
-//
-//        val fb1 = Foobar(listOf(5, "cool"), 37)
-//        println(BossEncoder.encodeToStruct(fb1))
-//    }
+    @Test
+    fun testListHelpter() {
+        val x = listOf(1, 2)
+        assertEquals(1L, x.longAt(0))
+        assertEquals(2, x.intAt(1))
+    }
 
+    @Test
+    fun deserializeToBossStruct() {
+      val x = testSimpleBoss().decodeBoss<BossStruct>()
+      assertEquals(42, x.getAs<Int>("intValue"))
+    }
 }

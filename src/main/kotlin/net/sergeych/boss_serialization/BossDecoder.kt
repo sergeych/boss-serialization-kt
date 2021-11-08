@@ -99,6 +99,8 @@ class BossDecoder(
          * Decode (deserialize) from a reader. The return type could be specified as nullable.
          */
         inline fun <reified T> decodeFrom(br: Boss.Reader): T {
+            if( T::class == BossStruct::class )
+                return BossStruct(br.readMap().toMutableMap<String,Any?>()) as T
             val d = EmptySerializersModule.serializer<T>()
             val decoder = BossDecoder(br.readMap().toMap(),
                 d.descriptor)
