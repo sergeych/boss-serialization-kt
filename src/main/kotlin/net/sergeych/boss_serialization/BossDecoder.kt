@@ -1,5 +1,5 @@
 @file:UseSerializers(ZonedDateTimeSerializer::class)
-@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED", "UNCHECKED_CAST")
 
 package net.sergeych.boss_serialization
 
@@ -98,13 +98,16 @@ class BossDecoder(
         /**
          * Decode (deserialize) from a reader. The return type could be specified as nullable.
          */
-        inline fun <reified T> decodeFrom(br: Boss.Reader): T {
-            if( T::class == BossStruct::class )
+        inline fun <reified T> decodeFrom(br: Boss.Reader): T =
+            decodeFrom(T::class.java, br)
+
+        fun <T> decodeFrom(cls: Class<T>,br: Boss.Reader): T {
+            if( cls == BossStruct::class.java )
                 return BossStruct(br.readMap().toMutableMap<String,Any?>()) as T
-            val d = EmptySerializersModule.serializer<T>()
+            val d = EmptySerializersModule.serializer(cls)
             val decoder = BossDecoder(br.readMap().toMap(),
                 d.descriptor)
-            return d.deserialize(decoder)
+            return d.deserialize(decoder) as T
         }
 
         /**
@@ -122,18 +125,20 @@ class BossDecoder(
          * @param map a map, or a [BossStruct] instance.
          * @return deserialized instance
          */
-        inline fun <reified T> decodeFrom(map: Map<String,Any?>): T {
-            if( T::class == BossStruct::class )
+        inline fun <reified T> decodeFrom(map: Map<String,Any?>): T = decodeFrom(T::class.java, map)
+
+        fun <T> decodeFrom(cls: Class<T>,map: Map<String,Any?>): T {
+            if( cls == BossStruct::class.java )
                 return BossStruct(map.toMutableMap<String,Any?>()) as T
-            val d = EmptySerializersModule.serializer<T>()
+            val d = EmptySerializersModule.serializer(cls)
             val decoder = BossDecoder(BossStruct.from(map), d.descriptor)
-            return d.deserialize(decoder)
+            return d.deserialize(decoder) as T
         }
 
         /**
          * Decode (deserialize) from a byte array. The return type could be specified as nullable.
          */
-        inline fun <reified T> decodeFrom(binaryData: ByteArray): T {
+        inline fun <reified T> decodeFrom(binaryData: ByteArray): T? {
             return decodeFrom(Boss.Reader(binaryData))
         }
     }

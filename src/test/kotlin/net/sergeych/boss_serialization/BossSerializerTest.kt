@@ -254,6 +254,7 @@ internal class BossSerializerTest {
     @Test
     fun deserializeToBossStruct() {
       val x = testSimpleBoss().decodeBoss<BossStruct>()
+        println(x)
       assertEquals(42, x.getAs<Int>("intValue"))
     }
 }

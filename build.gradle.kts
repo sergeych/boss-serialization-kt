@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
-    val  kotlinVersion = "1.5.31"
+    val  kotlinVersion = "1.6.0"
     kotlin("jvm") version kotlinVersion
     id("java-library")
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
@@ -24,11 +24,12 @@ repositories {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.3.0")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.3.1")
     implementation("com.icodici:common_tools:3.14.3+")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+//    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.test {
@@ -61,3 +62,11 @@ tasks.dokkaHtml.configure {
     outputDirectory.set(buildDir.resolve("dokka"))
 }
 
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}

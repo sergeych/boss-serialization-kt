@@ -49,7 +49,7 @@ fun loadBossList(packed: ByteArray): List<Any?> {
  * Decode boss object from this binary data into a given class instance
  */
 @OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> ByteArray.decodeBoss(): T = BossDecoder.decodeFrom(this)
+inline fun <reified T> ByteArray.decodeBoss(): T = BossDecoder.decodeFrom(this)!!
 
 /**
  * Convenience method: decode boss binary data to struct.
@@ -61,7 +61,7 @@ fun ByteArray.decodeBossStruct(): BossStruct = BossStruct(Boss.load(this) as Mut
  */
 @Suppress("unused")
 @OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> Boss.Reader.deserialize(): T = BossDecoder.decodeFrom(this)
+inline fun <reified T> Boss.Reader.deserialize(): T = BossDecoder.decodeFrom(this)!!
 
 /**
  * ASCII dump representation for a binary data, with address, hex and ascii fields, following the

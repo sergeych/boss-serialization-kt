@@ -77,13 +77,16 @@ class BossEncoder(private val currentObject: MutableMap<String, Any?>) : NamedVa
          * itself with this encoder), in the form that could be serialized with low-level boss packer or
          * deserialized from it using matching [BossDecoder.decodeFrom] method.
          */
-        inline fun <reified T> encodeToStruct(value: T): BossStruct =
+        inline fun <reified T: Any> encodeToStruct(value: T): BossStruct =
+            encodeToStruct(T::class.java, value)
+
+        fun <T: Any> encodeToStruct(cls: Class<T>,value: T): BossStruct =
             if (value is Map<*, *>)
                 BossStruct.from(value)
             else
                 BossStruct().also {
                     BossEncoder(it).encodeSerializableValue(
-                        EmptySerializersModule.serializer<T>(),
+                        EmptySerializersModule.serializer(cls),
                         value
                     )
                 }
