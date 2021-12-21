@@ -2,7 +2,6 @@
 
 package net.sergeych.boss_serialization
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -253,8 +252,20 @@ internal class BossSerializerTest {
 
     @Test
     fun deserializeToBossStruct() {
-      val x = testSimpleBoss().decodeBoss<BossStruct>()
+        val x = testSimpleBoss().decodeBoss<BossStruct>()
         println(x)
-      assertEquals(42, x.getAs<Int>("intValue"))
+        assertEquals(42, x.getAs<Int>("intValue"))
+    }
+
+    @Test
+    fun intLongTest() {
+        @Serializable
+        data class ILT(val i: Int,val l: Long)
+        val x = BossEncoder.encode(ILT(1, 100L))
+//        Bytes.dump(x)
+        val y: ILT = x.decodeBoss()
+//        println(y)
+        assertEquals(1, y.i)
+        assertEquals(100L, y.l)
     }
 }

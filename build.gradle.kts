@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.0.5"
+version = "1.0.8-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.3.1")
-    implementation("com.icodici:common_tools:3.14.3+")
+    implementation("com.icodici:common_tools:3.14.3")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")

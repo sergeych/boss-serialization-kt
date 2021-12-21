@@ -87,6 +87,14 @@ class BossDecoder(
         return (decodeTaggedValue(tag) as Number).toFloat()
     }
 
+    override fun decodeTaggedInt(tag: String): Int {
+        return (decodeTaggedValue(tag) as Number).toInt()
+    }
+
+    override fun decodeTaggedLong(tag: String): Long {
+        return (decodeTaggedValue(tag) as Number).toLong()
+    }
+
     private fun checkTagIsStored(tag: String) {
         if (tag !in currentObject) throw SerializationException("missing property $tag")
     }

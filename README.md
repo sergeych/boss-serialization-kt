@@ -35,7 +35,7 @@ Add dependency to where needed:
 ~~~
 dependencies {
     //...  
-    implementation("net.sergeych:boss-serialization:1.0.5")
+    implementation("net.sergeych:boss-serialization:1.0.8-SNAPSHOT")
 }
 ~~~
 
