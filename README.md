@@ -1,6 +1,6 @@
 # boss-serialization-kt
 
-> Beta-1. Please report any issues and be ready for bugs and minor interfaces changes.
+
 
 kotlinx.serialization module for [BOSS](https://kb.universablockchain.com/boss_serialization_protocol/307) space-effective typed binary format used in most Universa and [iCodici](https://icodici.com) products and other places. As for now it provides boss-compliant de/serialization of:
 
@@ -17,6 +17,27 @@ kotlinx.serialization module for [BOSS](https://kb.universablockchain.com/boss_s
 - enums are serialized _using ordinals to reduce length_. This goes along with Boss philosophy.
 
 Note that it is based on experimental API of the kotlinx serialization that could be changed, so it is also experimental.
+
+## How to use
+
+Add our public repository to your project:
+
+~~~
+repositories {
+    // google() or whatever else
+    // ...
+    maven("https://maven.universablockchain.com/")
+}
+~~~
+
+Add dependency to where needed:
+
+~~~
+dependencies {
+    //...  
+    implementation("net.sergeych:boss-serialization:1.0.5")
+}
+~~~
 
 ## Usage notes
 
@@ -84,6 +105,12 @@ You can, for example, add the following line
 ```
 
 to the beginning any file that uses `ZonedDateTime` serializable fields.
+
+## Notes on the security
+
+Our repository accounts credentials are secured with [zetext encryption](https://github.com/sergeych/ZeText): we care about our users and are trying to protect against credential stealing and supply chain attack. Feel free to use this approach too.
+
+Also, we DO NOT USE APACHE LOG4J (and actually neved used it, 20+M to write text to a log file is absurd).
 
 ## Boss protocol links
 

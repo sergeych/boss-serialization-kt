@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+
 package net.sergeych.boss_serialization
 
 import kotlinx.serialization.Contextual
@@ -31,6 +33,14 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
      */
     fun <T> getAs(key: String): T = get(key) as T
 
+    /**
+     * Get a struct for a given key and deserialize it.
+     * @return deserialized instance (could be null, as Boss supports nulls serialization)
+     * @throws IllegalArgumentException if the key is missing
+     */
+    inline fun <reified T>decode(key: String): T =
+        BossDecoder.decodeFrom(getStruct(key) ?: throw IllegalArgumentException("missing key $key"))
+
     fun getByteArray(key: String): ByteArray? = get(key)?.let { makeByteArray(it) }
 
     override fun toString(): String =
@@ -39,7 +49,6 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
         } + "}"
 //    override fun toString(): String = __source.toString()
 
-    @Suppress("unused")
     companion object {
         /**
          * Inherently empty instance of the BossStruct which can not be modified in any way.
@@ -62,7 +71,7 @@ class BossStruct(private val __source: MutableMap<String, @Contextual Any?> = Ha
             when (source) {
                 is BossStruct -> source
                 is MutableMap<*, *> -> BossStruct(source as MutableMap<String, Any?>)
-                is Map<*, *> -> BossStruct((source as Map<String, Any?>).toMutableMap())
+//                is Map<*, *> -> BossStruct((source as Map<String, Any?>).toMutableMap())
                 else -> throw ClassCastException("can't convert to BossStruct: $source")
             }
 

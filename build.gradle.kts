@@ -7,10 +7,11 @@ plugins {
     id("java-library")
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jetbrains.dokka") version "1.4.30"
+    `maven-publish`
 }
 
 group = "net.sergeych"
-version = "1.0.2-beta1"
+version = "1.0.5"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -66,7 +67,30 @@ val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
+
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+//            groupId = "org.gradle.sample"
+//            artifactId = "library"
+//            version = "1.1"
+
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.universablockchain.com/")
+            credentials {
+                username = System.getenv("maven_user")
+                password = System.getenv("maven_password")
+            }
+        }
+    }
+}
+
